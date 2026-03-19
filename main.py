@@ -2,9 +2,9 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
+import os
 
-# typofix 的绝对路径
-TYPOFIX_CMD = r"D:\python312\Scripts\typofix.exe"
+TYPOFIX_CMD = r"D:/python312/Scripts/typofix.exe"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
@@ -12,7 +12,6 @@ class TypofixPlugin(Star):
         super().__init__(context)
 
     async def initialize(self):
-        """插件初始化（可选）"""
         logger.info("[typofix_sentence_check] 插件初始化完成")
 
     @filter.command("病句")
@@ -26,8 +25,15 @@ class TypofixPlugin(Star):
             yield event.plain_result("请提供需要检测的句子，例如：/病句 这个例子不太合适。")
             return
 
+        # 路径检测
+        if not os.path.exists(TYPOFIX_CMD):
+            yield event.plain_result(
+                f"无法找到 typofix.exe，请确认路径是否正确：{TYPOFIX_CMD}\n"
+                "请用 dir 命令检查文件是否存在，并确认bot运行环���对该文件有访问权限。"
+            )
+            return
+
         try:
-            # 使用 typofix CLI 的 --pipe 参数（绝对路径）
             proc = await asyncio.create_subprocess_exec(
                 TYPOFIX_CMD, "--pipe",
                 stdin=asyncio.subprocess.PIPE,
@@ -52,5 +58,4 @@ class TypofixPlugin(Star):
             yield event.plain_result(f"插件内部错误：{e}")
 
     async def terminate(self):
-        """插件销毁（可选）"""
         logger.info("[typofix_sentence_check] 插件销毁完成")
