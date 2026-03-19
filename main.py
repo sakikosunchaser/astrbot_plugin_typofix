@@ -35,7 +35,7 @@ class TypofixPlugin(Star):
             "temperature": 0.4
         }
         try:
-            resp = requests.post(SILICONFLOW_BASE_URL, json=data, headers=headers, timeout=10)
+            resp = requests.post(SILICONFLOW_BASE_URL, json=data, headers=headers, timeout=60)
             resp.raise_for_status()
             result = resp.json()
             # 按硅基流动API标准取文本
