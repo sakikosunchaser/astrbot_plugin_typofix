@@ -3,7 +3,8 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
 
-TYPOFIX_CMD = "/root/.local/bin/typofix"
+# 用软链接到/usr/local/bin的命令
+TYPOFIX_CMD = "/usr/local/bin/typofix"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
@@ -16,7 +17,6 @@ class TypofixPlugin(Star):
     @filter.command("病句")
     async def check_typofix(self, event: AstrMessageEvent):
         content = event.message_str.strip()
-        # 调试输出
         yield event.plain_result(f"调用路径: {TYPOFIX_CMD}")
 
         if not content:
