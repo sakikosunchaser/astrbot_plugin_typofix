@@ -3,7 +3,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
 
-# 优先用 /root/.local/bin/typofix（软链接更通用）
+# pipx 安装后的 typofix 命令路径
 TYPOFIX_CMD = "/root/.local/bin/typofix"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
@@ -16,15 +16,19 @@ class TypofixPlugin(Star):
 
     @filter.command("病句")
     async def check_typofix(self, event: AstrMessageEvent):
+        """
+        检查一句话是否为病句，并给出理由和修改建议（用typofix fix --suggest --pipe）。
+        用法：/病句 一句话
+        """
         content = event.message_str.strip()
 
         if not content:
-            yield event.plain_result("请提供需要检测的句子，例如：/病句 这个例子不太���适。")
+            yield event.plain_result("请提供需要检测的句子，例如：/病句 这个例子不太合适。")
             return
-        
+
         try:
             proc = await asyncio.create_subprocess_exec(
-                TYPOFIX_CMD, "--pipe",
+                TYPOFIX_CMD, "fix", "--suggest", "--pipe",
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
@@ -46,7 +50,7 @@ class TypofixPlugin(Star):
             logger.error(f"Typofix 调用异常：{e}")
             yield event.plain_result(
                 f"插件内部错误：{e}\n"
-                f"尝试手动运行 {TYPOFIX_CMD} --help，确认命令可用，若报错贴出来。"
+                f"若有疑问可手动运行 `{TYPOFIX_CMD} fix --suggest --pipe` 检查命令是否可用。"
             )
 
     async def terminate(self):
