@@ -8,7 +8,7 @@ import requests
 TYPOFIX_CMD = "/opt/typofix_venv/bin/typofix"
 SILICONFLOW_API_KEY = os.environ.get("SILICONFLOW_API_KEY")
 SILICONFLOW_BASE_URL = os.environ.get(
-    "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1/chat/completions"
+    "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1"
 )
 # 如果只需 /v1/ ，换 "https://api.siliconflow.cn/v1/"
 
