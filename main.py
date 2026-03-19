@@ -26,7 +26,7 @@ class TypofixPlugin(Star):
             "Content-Type": "application/json"
         }
         data = {
-            "model": "glm-4",   # 如有更强模型可自行更改
+            "model": "deepseek-ai/DeepSeek-V3.2",   # 如有更强模型可自行更改
             "messages": [
                 {"role": "system", "content": "你是专业的中英翻译助手。请忠实准确地将用户的英文文本翻译为书面中文，输出只有翻译结果。"},
                 {"role": "user", "content": f"请把如下英文内容完整翻译为书面中文：\n{text}"}
