@@ -55,3 +55,4 @@ class TypofixPlugin(Star):
 
     async def terminate(self):
         logger.info("[typofix_sentence_check] 插件销毁完成")
+        
