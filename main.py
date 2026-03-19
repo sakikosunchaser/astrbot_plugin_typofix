@@ -2,18 +2,46 @@ from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
-from googletrans import Translator
+import os
+import requests
 
 TYPOFIX_CMD = "/opt/typofix_venv/bin/typofix"
+SILICONFLOW_API_KEY = os.environ.get("SILICONFLOW_API_KEY")
+SILICONFLOW_BASE_URL = os.environ.get(
+    "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1/chat/completions"
+)
+# 如果只需 /v1/ ，换 "https://api.siliconflow.cn/v1/"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议（中文），/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
-        self.translator = Translator()
 
     async def initialize(self):
         logger.info("[typofix_sentence_check] 插件初始化完成")
+
+    def siliconflow_translate(self, text):
+        headers = {
+            "Authorization": f"Bearer {SILICONFLOW_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "glm-4",   # 如有更强模型可自行更改
+            "messages": [
+                {"role": "system", "content": "你是专业的中英翻译助手。请忠实准确地将用户的英文文本翻译为书面中文，输出只有翻译结果。"},
+                {"role": "user", "content": f"请把如下英文内容完整翻译为书面中文：\n{text}"}
+            ],
+            "max_tokens": 1024,
+            "temperature": 0.4
+        }
+        try:
+            resp = requests.post(SILICONFLOW_BASE_URL, json=data, headers=headers, timeout=10)
+            resp.raise_for_status()
+            result = resp.json()
+            # 按硅基流动API标准取文本
+            return result['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            return f"[翻译失败] {e}"
 
     @filter.command("病句")
     async def check_typofix(self, event: AstrMessageEvent):
@@ -37,14 +65,11 @@ class TypofixPlugin(Star):
             if not result:
                 yield event.plain_result("未检测到任何语病。")
                 return
-
-            # 自动翻译为中文
-            try:
-                translated = self.translator.translate(result, dest='zh-cn').text
-                reply = f"【原句】\n{content}\n\n【检测结果（中文）】\n{translated}"
-            except Exception as trans_e:
-                reply = f"【原句】\n{content}\n\n【检测结果（英文）】\n{result}\n\n自动翻译失败：{trans_e}"
-
+            # 英文转中文
+            translated = await asyncio.get_event_loop().run_in_executor(
+                None, self.siliconflow_translate, result
+            )
+            reply = f"【原句】\n{content}\n\n【检测结果（中文）】\n{translated}"
             yield event.plain_result(reply)
         except Exception as e:
             logger.error(f"Typofix 调用异常：{e}")
@@ -55,4 +80,3 @@ class TypofixPlugin(Star):
 
     async def terminate(self):
         logger.info("[typofix_sentence_check] 插件销毁完成")
-        
