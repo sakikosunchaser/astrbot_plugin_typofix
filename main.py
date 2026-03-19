@@ -4,8 +4,7 @@ from astrbot.api import logger
 import asyncio
 import os
 
-# pipx 安装后的 typofix 绝对路径
-TYPOFIX_CMD = "/root/.local/bin/typofix"
+TYPOFIX_CMD = "/root/.local/pipx/venvs/typofix/bin/typofix"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
@@ -21,8 +20,7 @@ class TypofixPlugin(Star):
 
         # 路径检测
         if not os.path.exists(TYPOFIX_CMD):
-            yield event.plain_result(f"无法找到 typofix，请确认 {TYPOFIX_CMD} 路径下文件存在。\n"
-                                     "如有疑问可贴 ls /root/.local/bin/typofix 的输出。")
+            yield event.plain_result(f"无法找到 typofix命令：{TYPOFIX_CMD}，请确认路径是否存在。")
             return
 
         if not content:
@@ -50,7 +48,7 @@ class TypofixPlugin(Star):
             reply = f"【原句】\n{content}\n\n【检测结果】\n{result}"
             yield event.plain_result(reply)
         except Exception as e:
-            logger.error(f"Typofix 调用���常：{e}")
+            logger.error(f"Typofix 调用异常：{e}")
             yield event.plain_result(f"插件内部错误：{e}")
 
     async def terminate(self):
