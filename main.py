@@ -4,7 +4,8 @@ from astrbot.api import logger
 import asyncio
 import os
 
-TYPOFIX_CMD = "./typofix.exe"  # 假设 typofix.exe 已在插件同目录
+# 用插件文件同目录定位 typofix.exe
+TYPOFIX_CMD = os.path.join(os.path.dirname(__file__), "typofix.exe")
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
@@ -25,10 +26,12 @@ class TypofixPlugin(Star):
             yield event.plain_result("请提供需要检测的句子，例如：/病句 这个例子不太合适。")
             return
 
-        # 路径检测
+        # 路径检测和输出当前目录调试
+        debug_info = f"插件目录: {os.path.dirname(__file__)}\n当前工作目录: {os.getcwd()}\n文件存在: {os.path.exists(TYPOFIX_CMD)}"
         if not os.path.exists(TYPOFIX_CMD):
             yield event.plain_result(
-                f"无法找到 typofix.exe，请确认 {TYPOFIX_CMD} 路径下文件存在。"
+                f"无法找到 typofix.exe，请确认 {TYPOFIX_CMD} 路径下文件存在。\n{debug_info}\n"
+                "如出现问题，请把 typofix.exe 拷贝到插件.py同目录下"
             )
             return
 
