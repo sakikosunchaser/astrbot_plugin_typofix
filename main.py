@@ -6,7 +6,7 @@ import os
 import requests
 
 TYPOFIX_CMD = "/opt/typofix_venv/bin/typofix"
-SILICONFLOW_API_KEY = os.environ.get("SILICONFLOW_API_KEY")
+SILICONFLOW_API_KEY = "sk-chkuxaaabozelsyqjyyexsqypkzlehogajptsrxdsrshvovr"
 SILICONFLOW_BASE_URL = os.environ.get(
     "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1/chat/completions"
 )
