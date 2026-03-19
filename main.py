@@ -3,7 +3,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
 
-# 用软链接到/usr/local/bin的命令
+# 保证用完整shell路径
 TYPOFIX_CMD = "/usr/local/bin/typofix"
 
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
@@ -17,15 +17,16 @@ class TypofixPlugin(Star):
     @filter.command("病句")
     async def check_typofix(self, event: AstrMessageEvent):
         content = event.message_str.strip()
-        yield event.plain_result(f"调用路径: {TYPOFIX_CMD}")
+        yield event.plain_result(f"调用shell命令: {TYPOFIX_CMD} fix --suggest \"{content}\"")
 
         if not content:
             yield event.plain_result("请提供需要检测的句子，例如：/病句 这个例子不太合适。")
             return
 
         try:
-            proc = await asyncio.create_subprocess_exec(
-                TYPOFIX_CMD, "fix", "--suggest", content,
+            # 用shell方式，避免PATH或exec查找障碍
+            proc = await asyncio.create_subprocess_shell(
+                f'{TYPOFIX_CMD} fix --suggest "{content}"',
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
