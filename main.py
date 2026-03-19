@@ -3,6 +3,9 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import asyncio
 
+# typofix 的绝对路径
+TYPOFIX_CMD = r"D:\python312\Scripts\typofix.exe"
+
 @register("typofix_sentence_check", "sakikosunchaser", "自动检测病句并给出理由和修改建议，/病句【内容】", "1.0.0")
 class TypofixPlugin(Star):
     def __init__(self, context: Context):
@@ -24,9 +27,9 @@ class TypofixPlugin(Star):
             return
 
         try:
-            # 使用 typofix CLI 的 --pipe 参数 (确保环境有 typofix)
+            # 使用 typofix CLI 的 --pipe 参数（绝对路径）
             proc = await asyncio.create_subprocess_exec(
-                "typofix", "--pipe",
+                TYPOFIX_CMD, "--pipe",
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
